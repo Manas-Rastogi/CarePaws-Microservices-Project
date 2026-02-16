@@ -64,6 +64,7 @@ services:
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=dolpi
       - SPRING_RABBITMQ_PASSWORD=dolpi123
+      - FILE_UPLOAD_DIR=/app/uploads
     depends_on:
       eureka-server:
         condition: service_healthy
