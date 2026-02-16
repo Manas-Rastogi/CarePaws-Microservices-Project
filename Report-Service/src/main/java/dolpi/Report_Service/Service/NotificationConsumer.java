@@ -5,24 +5,16 @@ import dolpi.Report_Service.Dto.Notifiaction;
 import dolpi.Report_Service.Dto.Notificationmessage;
 import dolpi.Report_Service.Dto.RegisterEntity;
 import dolpi.Report_Service.Dto.RegisterNgo;
-import dolpi.Report_Service.Exception.ResourcesNotFound;
-import dolpi.Report_Service.Interface.MuncipalFeign;
-import dolpi.Report_Service.Interface.NGOFeign;
 import dolpi.Report_Service.Interface.NotificationFeign;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.amqp.RabbitProperties;
 import org.springframework.stereotype.Service;
-
 import com.rabbitmq.client.Channel;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -39,57 +31,83 @@ public class NotificationConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE, ackMode = "MANUAL")
     public void consume(Notificationmessage notificationmessage, Message message, Channel channel) throws IOException {
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-        if (notificationmessage == null) throw new ResourcesNotFound("Invalid Message");
+        // 1. Null Message Check
+        if (notificationmessage == null) {
+            log.error("Received null message from RabbitMQ. Acknowledging to remove from queue.");
+            channel.basicAck(deliveryTag, false);
+            return;
+        }
 
         try {
             String city = notificationmessage.getCity();
+            log.info("Processing notification for city: {}", city);
 
-            List<RegisterNgo> ngos = ngoFeignService.findNGO(city);
-
-            List<RegisterEntity> municipals =
-                    muncipalFeignService.findMunicipal(city);
-
-            if(ngos==null || ngos.isEmpty()){
-                log.warn("NGO is Null");
-                throw new ResourcesNotFound("Ngo Is Null");
+            // 2. Fetch NGOs (Wrapped in try-catch to prevent Feign/CircuitBreaker crash)
+            List<RegisterNgo> ngos = new ArrayList<>();
+            try {
+                ngos = ngoFeignService.findNGO(city);
+            } catch (Exception e) {
+                log.error("NGO Service call failed for city {}: {}", city, e.getMessage());
             }
 
-            if(municipals==null || municipals.isEmpty()){
-                log.warn("MUNCIPAL is Null");
-                throw new ResourcesNotFound("NGO Is Null");
+            // 3. Fetch Municipals (Wrapped in try-catch)
+            List<RegisterEntity> municipals = new ArrayList<>();
+            try {
+                municipals = muncipalFeignService.findMunicipal(city);
+            } catch (Exception e) {
+                log.error("Municipal Service call failed for city {}: {}", city, e.getMessage());
             }
 
-            if (ngos != null) {
+            // 4. Data Validation (Log instead of throwing Exception to avoid loop)
+            boolean hasNgos = (ngos != null && !ngos.isEmpty());
+            boolean hasMunicipals = (municipals != null && !municipals.isEmpty());
+
+            if (!hasNgos && !hasMunicipals) {
+                log.warn("No NGO or Municipal found for city: {}. Acknowledging message as 'processed' (no targets found).", city);
+                channel.basicAck(deliveryTag, false);
+                return;
+            }
+
+            // 5. Process NGOs
+            if (hasNgos) {
                 for (RegisterNgo ngo : ngos) {
-                    Notifiaction n = new Notifiaction();
-                    n.setSubmissionId(notificationmessage.getReported_id());
-                    n.setNgoanmcplId(ngo.getId());
-                    notificationFeignService.savenotifiaction(n);
+                    processNotification(notificationmessage.getReported_id(), ngo.getId());
                 }
             }
 
-            if (municipals != null) {
+            // 6. Process Municipals
+            if (hasMunicipals) {
                 for (RegisterEntity entity : municipals) {
-                    Notifiaction n = new Notifiaction();
-                    n.setSubmissionId(notificationmessage.getReported_id());
-                    n.setNgoanmcplId(entity.getId());
-                    notificationFeignService.savenotifiaction(n);
+                    processNotification(notificationmessage.getReported_id(), entity.getId());
                 }
             }
 
-            // ACK only on success
-            channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+            // SUCCESS: Message successfully handled
+            channel.basicAck(deliveryTag, false);
+            log.info("Completed processing for city: {}", city);
 
         } catch (Exception ex) {
-            log.error("Processing failed", ex);
+            log.error("Critical error in consumer logic: {}", ex.getMessage());
+            
+            // IMPORTANT: Setting requeue to 'false' to prevent infinite loops.
+            // If you have a Dead Letter Queue (DLQ) configured, it will go there.
+            channel.basicNack(deliveryTag, false, false);
+        }
+    }
 
-            //  reject & requeue
-            channel.basicNack(
-                    message.getMessageProperties().getDeliveryTag(),
-                    false,
-                    true
-            );
+    /**
+     * Helper method to handle individual notification saves
+     */
+    private void processNotification(String reportedId, String targetId) {
+        try {
+            Notifiaction n = new Notifiaction();
+            n.setSubmissionId(reportedId);
+            n.setNgoanmcplId(targetId);
+            notificationFeignService.savenotifiaction(n);
+        } catch (Exception e) {
+            log.error("Failed to save notification for TargetID {}: {}", targetId, e.getMessage());
         }
     }
 }
