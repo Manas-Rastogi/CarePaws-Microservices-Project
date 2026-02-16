@@ -10,11 +10,6 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: dolpi
       RABBITMQ_DEFAULT_PASS: dolpi123
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   eureka-server:
@@ -27,11 +22,6 @@ services:
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
       - EUREKA_CLIENT_FETCH_REGISTRY=false
       - EUREKA_SERVER_WAIT_TIME_IN_MS_WHEN_SYNC_EMPTY=0
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 20s
-      timeout: 10s
-      retries: 5
     restart: unless-stopped
 
   apigateway:
@@ -42,10 +32,9 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_INSTANCE_ID=apigateway:${random.value}
+      - EUREKA_INSTANCE_INSTANCE_ID=apigateway:$${random.value}
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
     restart: unless-stopped
 
   report-service:
@@ -59,17 +48,15 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_INSTANCE_ID=report-service:${random.value}
+      - EUREKA_INSTANCE_INSTANCE_ID=report-service:$${random.value}
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=dolpi
       - SPRING_RABBITMQ_PASSWORD=dolpi123
       - FILE_UPLOAD_DIR=/app/uploads
     depends_on:
-      eureka-server:
-        condition: service_started
-      rabbitmq:
-        condition: service_healthy
+      - eureka-server
+      - rabbitmq
     restart: unless-stopped
 
   carepaws:
@@ -80,10 +67,9 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_INSTANCE_ID=carepaws:${random.value}
+      - EUREKA_INSTANCE_INSTANCE_ID=carepaws:$${random.value}
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
     restart: unless-stopped
 
   municipal-service:
@@ -94,10 +80,9 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_INSTANCE_ID=municipal-service:${random.value}
+      - EUREKA_INSTANCE_INSTANCE_ID=municipal-service:$${random.value}
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
     restart: unless-stopped
 
   ngo-service:
@@ -108,10 +93,9 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_INSTANCE_ID=ngo-service:${random.value}
+      - EUREKA_INSTANCE_INSTANCE_ID=ngo-service:$${random.value}
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
     restart: unless-stopped
 
   notification-service:
@@ -122,8 +106,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
-      - EUREKA_INSTANCE_INSTANCE_ID=notification-service:${random.value}
+      - EUREKA_INSTANCE_INSTANCE_ID=notification-service:$${random.value}
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
     restart: unless-stopped
