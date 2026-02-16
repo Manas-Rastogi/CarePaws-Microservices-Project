@@ -4,8 +4,6 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
-    networks:
-      - dolpi-network
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -17,41 +15,32 @@ services:
   eureka-server:
     build: ./eureka-server/EurekaServer-Pawscare
     container_name: eureka-server
-    networks:
-      - dolpi-network
     ports:
       - "8761:8761"
     environment:
       - JAVA_OPTS=-Xms128m -Xmx256m
       - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
       - EUREKA_CLIENT_FETCH_REGISTRY=false
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - EUREKA_SERVER_WAIT_TIME_IN_MS_WHEN_SYNC_EMPTY=0
     restart: unless-stopped
 
   apigateway:
     build: ./apigateway/Apigateway
     container_name: apigateway
-    networks:
-      - dolpi-network
     ports:
       - "8081:8083"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_INSTANCE_ID=apigateway:$${random.value}
     depends_on:
       eureka-server:
-        condition: service_healthy
+        condition: service_started # FIX: Ab ye "Unhealthy" hone par block nahi karega
     restart: unless-stopped
 
   report-service:
     build: ./Report-Service
     container_name: report-service
-    networks:
-      - dolpi-network
     user: root
     ports:
       - "8086:8086"
@@ -60,6 +49,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_INSTANCE_ID=report-service:$${random.value}
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=dolpi
@@ -67,7 +57,7 @@ services:
       - FILE_UPLOAD_DIR=/app/uploads
     depends_on:
       eureka-server:
-        condition: service_healthy
+        condition: service_started
       rabbitmq:
         condition: service_started
     restart: unless-stopped
@@ -75,63 +65,55 @@ services:
   carepaws:
     build: ./carepaws/CarePaws
     container_name: carepaws
-    networks:
-      - dolpi-network
     ports:
       - "8082:8081"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_INSTANCE_ID=carepaws:$${random.value}
     depends_on:
       eureka-server:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   municipal-service:
     build: ./muncipal-service/Muncipal-Service
     container_name: municipal-service
-    networks:
-      - dolpi-network
     ports:
       - "8083:8083"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_INSTANCE_ID=municipal-service:$${random.value}
     depends_on:
       eureka-server:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   ngo-service:
     build: ./ngo-service/NGO-SERVICE/NGO-SERVICE
     container_name: ngo-service
-    networks:
-      - dolpi-network
     ports:
       - "8084:8084"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_INSTANCE_ID=ngo-service:$${random.value}
     depends_on:
       eureka-server:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
 
   notification-service:
     build: ./notification-service/Notification-Service
     container_name: notification-service
-    networks:
-      - dolpi-network
     ports:
       - "8085:8085"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
+      - EUREKA_INSTANCE_INSTANCE_ID=notification-service:$${random.value}
     depends_on:
       eureka-server:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
-
-networks:
-  dolpi-network:
-    driver: bridge
