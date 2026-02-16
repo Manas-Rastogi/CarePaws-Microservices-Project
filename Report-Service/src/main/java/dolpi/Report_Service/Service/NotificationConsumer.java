@@ -5,7 +5,6 @@ import dolpi.Report_Service.Dto.Notifiaction;
 import dolpi.Report_Service.Dto.Notificationmessage;
 import dolpi.Report_Service.Dto.RegisterEntity;
 import dolpi.Report_Service.Dto.RegisterNgo;
-import dolpi.Report_Service.Interface.NotificationFeign;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -33,81 +32,72 @@ public class NotificationConsumer {
     public void consume(Notificationmessage notificationmessage, Message message, Channel channel) throws IOException {
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-        // 1. Null Message Check
         if (notificationmessage == null) {
-            log.error("Received null message from RabbitMQ. Acknowledging to remove from queue.");
+            log.error("RabbitMQ message is null. Dropping message.");
             channel.basicAck(deliveryTag, false);
             return;
         }
 
         try {
             String city = notificationmessage.getCity();
-            log.info("Processing notification for city: {}", city);
+            log.info("Starting processing for city: {}", city);
 
-            // 2. Fetch NGOs (Wrapped in try-catch to prevent Feign/CircuitBreaker crash)
+            // 1. NGO Fetch (Isolated in try-catch to keep processing alive)
             List<RegisterNgo> ngos = new ArrayList<>();
             try {
                 ngos = ngoFeignService.findNGO(city);
             } catch (Exception e) {
-                log.error("NGO Service call failed for city {}: {}", city, e.getMessage());
+                log.error("NGO Service unavailable for city {}: {}", city, e.getMessage());
             }
 
-            // 3. Fetch Municipals (Wrapped in try-catch)
+            // 2. Municipal Fetch (Isolated in try-catch)
             List<RegisterEntity> municipals = new ArrayList<>();
             try {
                 municipals = muncipalFeignService.findMunicipal(city);
             } catch (Exception e) {
-                log.error("Municipal Service call failed for city {}: {}", city, e.getMessage());
+                log.error("Municipal Service unavailable for city {}: {}", city, e.getMessage());
             }
 
-            // 4. Data Validation (Log instead of throwing Exception to avoid loop)
-            boolean hasNgos = (ngos != null && !ngos.isEmpty());
-            boolean hasMunicipals = (municipals != null && !municipals.isEmpty());
-
-            if (!hasNgos && !hasMunicipals) {
-                log.warn("No NGO or Municipal found for city: {}. Acknowledging message as 'processed' (no targets found).", city);
+            // 3. Logic: Agar data nahi hai, toh exception throw mat karo (loop rokne ke liye)
+            if ((ngos == null || ngos.isEmpty()) && (municipals == null || municipals.isEmpty())) {
+                log.warn("No NGO or Municipal found for city: {}. Marking as processed.", city);
                 channel.basicAck(deliveryTag, false);
                 return;
             }
 
-            // 5. Process NGOs
-            if (hasNgos) {
+            // 4. Process valid NGOs
+            if (ngos != null) {
                 for (RegisterNgo ngo : ngos) {
-                    processNotification(notificationmessage.getReported_id(), ngo.getId());
+                    saveToNotificationService(notificationmessage.getReported_id(), ngo.getId());
                 }
             }
 
-            // 6. Process Municipals
-            if (hasMunicipals) {
+            // 5. Process valid Municipals
+            if (municipals != null) {
                 for (RegisterEntity entity : municipals) {
-                    processNotification(notificationmessage.getReported_id(), entity.getId());
+                    saveToNotificationService(notificationmessage.getReported_id(), entity.getId());
                 }
             }
 
-            // SUCCESS: Message successfully handled
+            // SUCCESS: Message acknowledge karein
             channel.basicAck(deliveryTag, false);
-            log.info("Completed processing for city: {}", city);
+            log.info("Successfully finished processing for city: {}", city);
 
         } catch (Exception ex) {
-            log.error("Critical error in consumer logic: {}", ex.getMessage());
-            
-            // IMPORTANT: Setting requeue to 'false' to prevent infinite loops.
-            // If you have a Dead Letter Queue (DLQ) configured, it will go there.
+            log.error("Unexpected error in consumer: {}", ex.getMessage());
+            // Fatal error par requeue=false karein taaki loop na bane
             channel.basicNack(deliveryTag, false, false);
         }
     }
 
-    /**
-     * Helper method to handle individual notification saves
-     */
-    private void processNotification(String reportedId, String targetId) {
+    private void saveToNotificationService(String reportedId, String targetId) {
         try {
             Notifiaction n = new Notifiaction();
             n.setSubmissionId(reportedId);
             n.setNgoanmcplId(targetId);
             notificationFeignService.savenotifiaction(n);
         } catch (Exception e) {
-            log.error("Failed to save notification for TargetID {}: {}", targetId, e.getMessage());
+            log.error("Failed to save notification for target {}: {}", targetId, e.getMessage());
         }
     }
 }
