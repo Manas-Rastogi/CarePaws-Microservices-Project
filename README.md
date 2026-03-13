@@ -1,190 +1,136 @@
 🐾 Stray Animal Emergency Response Platform
 
-A **microservices-based emergency response system** designed to bridge the communication gap between **citizens, NGOs, and Municipal Corporations** during **stray animal accidents**. The platform ensures **fast reporting, smart location-based discovery, and real-time notifications** to reduce response time and prevent avoidable animal deaths.
+Bridging the gap between citizens, NGOs, and municipal authorities — because every second counts.
 
----
 
- 🚨 Problem Statement
+🚨 Problem Statement
+Every day, stray animals are involved in accidents on city roads. But the system fails them:
 
-In many cities, when a **stray animal meets with an accident**, there is:
+❌ No centralized platform to report animal emergencies
+❌ No direct communication channel between citizens, NGOs, and municipal authorities
+❌ Manual phone calls and forwarding waste critical response time
 
-* ❌ No centralized platform to report emergencies
-* ❌ Delay in communication between citizens, NGOs, and municipal authorities
-* ❌ Manual calling & forwarding leading to **loss of critical time**
+The result? Animals die waiting for help that never arrives in time.
 
-Due to this delay, **many animals die without timely medical help**.
+✅ Solution
+A microservices-based emergency response platform that creates a single digital ecosystem where:
 
----
+👤 Citizens can instantly report an injured stray animal with photos and location details
+📍 The backend automatically identifies nearby NGOs and municipal bodies based on city/location
+🔔 Real-time notifications are dispatched instantly via event-driven messaging
+🏥 NGOs and municipal teams can acknowledge and respond without delay
 
- ✅ Solution Overview
-
-This platform provides a **single digital ecosystem** where:
-
-* 👤 **Users** can report an injured stray animal with **images + details**
-* 📍 The backend automatically identifies **nearby NGOs & Municipal bodies** based on **city/location**
-* 🔔 **Real-time notifications** are sent instantly
-* 🏥 NGOs/Municipal teams can **acknowledge and act quickly**
-
-The system is built using **modern cloud‑native architecture** for scalability, reliability, and performance.
-
----
 
 🧠 System Architecture
-
-* **Microservices Architecture** (loosely coupled services)
-* **Event‑Driven Communication** using RabbitMQ
-* **Dockerized Services** for easy deployment
-* **Secure APIs** using OAuth2 & Spring Security
-
-```
-User → API Gateway → Auth Service
-                 → Complaint Service → RabbitMQ → Notification Service
-                 → NGO Service
-                 → Municipal Service
-```
-
----
+mermaidgraph LR
+    User -->|Request| GW[API Gateway]
+    GW --> Auth[Auth Service]
+    GW --> CS[Complaint Service]
+    GW --> NGO[NGO Service]
+    GW --> MUN[Municipal Service]
+    CS -->|Publish Event| RMQ[RabbitMQ]
+    RMQ -->|Consume| NS[Notification Service]
+    NS -->|Alert| NGO
+    NS -->|Alert| MUN
+PrincipleImplementationService DesignMicroservices — loosely coupled, independently deployableCommunicationEvent-driven via RabbitMQDeploymentFully DockerizedSecurityOAuth2 + Spring Security
 
 🛠️ Tech Stack
+CategoryTechnologyLanguageJava 17FrameworkSpring Boot, Spring CloudSecuritySpring Security, OAuth2, JWTDatabaseMongoDBMessagingRabbitMQDevOpsDocker, Docker ComposeService DiscoveryEurekaCI/CDGitHub Actions
 
-### Backend
+🔐 Security
 
-* **Java 17**
-* **Spring Boot**
-* **Spring Security**
-* **OAuth 2.0 / JWT**
-* **Spring Cloud (Microservices)**
+OAuth2-based Authentication
+JWT Token-based Authorization
+Role-Based Access Control (RBAC):
 
- Databases
+RolePermissionsUSERSubmit emergency reportsNGOReceive notifications, acknowledge complaintsMUNICIPALMunicipal authority dashboard accessADMINFull system control
 
-* **MongoDB** (NoSQL, document‑based storage)
-
-Messaging
-
-* **RabbitMQ** (Asynchronous communication & notifications)
-
- DevOps & Infrastructure
-
-* **Docker & Docker Compose**
-* **Eureka Service Discovery**
-* **API Gateway**
-
----
-
-🔐 Security Features
-
-* OAuth2 based authentication
-* JWT token‑based authorization
-* Role‑based access control:
-
-  * USER
-  * NGO
-  * MUNICIPAL
-  * ADMIN
-
----
-
- 🧩 Microservices Breakdown
-
- 1️⃣ API Gateway Service
-
-* Central entry point for all requests
-* Handles routing, authentication, and security
-
+🧩 Microservices Breakdown
+1️⃣ API Gateway Service
+Central entry point for all incoming requests. Handles routing, authentication, and security enforcement.
 2️⃣ Auth Service
-
-* User registration & login
-* OAuth2 + JWT token generation
-
+Manages user registration and login. Issues OAuth2-compliant JWT tokens for secure access.
 3️⃣ Complaint Service
-
-* Accepts accident reports from users
-* Stores animal details, images & location
-
+Accepts accident reports from citizens. Stores animal details, uploaded images, and location data.
 4️⃣ NGO Service
-
-* Manages NGO profiles
-* Filters NGOs based on city/location
-
+Manages NGO profiles and filters relevant organizations based on city and location.
 5️⃣ Municipal Service
-
-* Manages municipal authority data
-* City‑wise authority mapping
-
+Maintains municipal authority data with city-wise mapping for targeted notification routing.
 6️⃣ Notification Service
+Listens to RabbitMQ events and dispatches real-time alerts to the appropriate NGOs and municipal teams.
 
-* Consumes RabbitMQ events
-* Sends notifications to NGOs & Municipal bodies
+📍 Location-Based Matching Logic
+When a user submits a complaint, the system:
 
----
+📌 Extracts the city/location from the complaint
+🔍 Fetches nearby NGOs and municipal bodies
+📨 Publishes an event to RabbitMQ
+🔔 Notification Service triggers targeted alerts
 
- 📍 Location‑Based Matching Logic
+The result: minimum response time, maximum impact.
 
-When a user submits a complaint:
+🚀 Getting Started
+Prerequisites
 
-1. Location (city) is extracted
-2. Nearby NGOs & Municipal bodies are fetched
-3. Event is published to RabbitMQ
-4. Notification service triggers alerts
+Docker & Docker Compose
+Java 17
+MongoDB
 
-This ensures **minimum response time**.
-
----
-
-## 🐳 Dockerized Setup
-
-Each microservice runs in its own container:
-
-* Independent scaling
-* Environment consistency
-* Easy cloud deployment (AWS ready)
-
----
-
-## 🚀 How to Run Locally
-
-### Prerequisites
-
-* Docker & Docker Compose
-* Java 17
-* MongoDB
-
-### Steps
-
-```bash
-# Clone the repository
+Run Locally
+bash# Clone the repository
 git clone https://github.com/your-username/your-repo-name.git
 
-# Move into project directory
+# Navigate into the project directory
 cd your-repo-name
 
 # Start all services
 docker-compose up --build
+All microservices will spin up automatically. 🎉
 
-----
+🐳 Docker Setup
+Each microservice runs in its own isolated container, providing:
 
-📦 Future Enhancements
+✅ Independent scaling per service
+✅ Consistent environments across dev, staging, and production
+✅ AWS-ready cloud deployment out of the box
 
-* 📱 Mobile App Integration
-* 🗺️ Live Google Maps Tracking
-* 📊 Admin Analytics Dashboard
-* 🔔 SMS / WhatsApp Alerts
------
+
+📦 Roadmap
+
+ 📱 Mobile App (Android & iOS)
+ 🗺️ Live Google Maps Tracking
+ 📊 Admin Analytics Dashboard
+ 🔔 SMS / WhatsApp Alert Integration
+ 🤖 AI-based Injury Severity Detection from Images
+
 
 💡 Why This Project Matters
 
-* Saves animal lives 🐶🐱
-* Reduces emergency response time
-* Enables transparent & accountable action
-* Real‑world social impact using technology
+"The best use of technology is when it saves a life."
 
- 👨‍💻 Author
 
-**Developed by:** *[Your Name]*
-**Role:** Backend / Java Microservices Developer
-**Tech Focus:** Spring Boot • Microservices • Docker • Cloud . GitHub Actions CI CD 
+🐶🐱 Directly saves stray animal lives
+⏱️ Drastically reduces emergency response time
+🏛️ Enables transparent coordination between NGOs and city authorities
+🌍 Real-world social impact built on modern software engineering
+
+
+👨‍💻 Author
+Developed by: [Your Name]
+Role: Backend / Java Microservices Developer
+Tech Focus: Spring Boot • Microservices • Docker • Cloud • GitHub Actions CI/CD
+
+🤝 Contributing
+Contributions are welcome! If you find a bug or want to suggest a feature:
+
+Fork the repository
+Create your feature branch (git checkout -b feature/AmazingFeature)
+Commit your changes (git commit -m 'Add some AmazingFeature')
+Push to the branch (git push origin feature/AmazingFeature)
+Open a Pull Request
+
 
 ⭐ Support
-If you like this project, please ⭐ star the repository and share it.
+If this project resonates with you, please give it a ⭐ star and share it.
 
-Together, we can use technology to make cities more compassionate ❤️
+"Together, we can use technology to make cities more compassionate." ❤️
