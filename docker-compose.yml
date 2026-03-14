@@ -44,7 +44,8 @@ services:
     ports:
       - "8086:8086"
     volumes:
-      - ./report-images:/app/uploads
+      # FIX: Absolute path use kiya hai permission errors hatane ke liye
+      - /home/ec2-user/CarePaws-Microservices-Project/report-images:/app/uploads
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
