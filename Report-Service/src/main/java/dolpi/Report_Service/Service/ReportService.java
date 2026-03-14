@@ -29,6 +29,11 @@ public class ReportService {
     // Docker volume path
     private final String uploadDir = "/app/uploads"; 
 
+  @Autowired
+  public ReportService(@Lazy ReportController reportController) {
+    this.reportController = reportController;
+  }
+
     public String report(ReportDTO reportDTO, MultipartFile file) {
         try {
             // 1. Directory taiyaar karein
