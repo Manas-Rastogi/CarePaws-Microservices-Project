@@ -116,7 +116,7 @@ Each microservice runs in its own isolated container, providing:
 
 
 👨‍💻 Author
-Developed by: [Your Name]
+Developed by: Manas Rastogi
 Role: Backend / Java Microservices Developer
 Tech Focus: Spring Boot • Microservices • Docker • Cloud • GitHub Actions CI/CD
 
