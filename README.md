@@ -240,7 +240,7 @@ Contributions are welcome and appreciated!
 - 🏛️ Enables transparent coordination between NGOs and city authorities
 - 🌍 Real-world social impact built on modern software engineering
 
----
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## 👨‍💻 Author
 
