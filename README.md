@@ -27,7 +27,7 @@ Every day, stray animals are injured on city roads. The current system fails the
 
 > **The result?** Animals die waiting for help that never arrives in time.
 
----
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## ✅ The Solution
 
