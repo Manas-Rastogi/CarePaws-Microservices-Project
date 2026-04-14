@@ -149,7 +149,7 @@ Maintains municipal authority data with city-wise mapping for targeted notificat
 Listens to RabbitMQ events and dispatches real-time alerts to appropriate NGOs and municipal teams.
 </details>
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## 📍 Location-Based Matching — How It Works
 
