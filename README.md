@@ -40,7 +40,7 @@ A **microservices-based emergency response platform** that creates a unified dig
 | 🏛️ **Municipal Bodies** | Get targeted notifications based on city/area mapping |
 | 🔧 **Admins** | Manage the entire ecosystem from a central dashboard |
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## 🧠 System Architecture
 
