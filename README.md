@@ -18,7 +18,7 @@
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## 🚨 The Problem
------------------------------------------
+---------------------------------------------------
 Every day, stray animals are injured on city roads. The current system fails them:
 
 - ❌ No centralized platform to report animal emergencies
