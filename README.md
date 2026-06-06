@@ -171,7 +171,7 @@ Notification Service triggers targeted alerts
         ▼
 ✅ Minimum response time. Maximum impact.
 ```
--------------------------------------
+---------------------------------------------------
 ---------------------------------------------------
 
 ## 🚀 Getting Started
