@@ -73,7 +73,7 @@ graph LR
     NS -->|Alert| NGO
     NS -->|Alert| MUN
 ```
-------------------------------------
+---------------------------------------------------
 | Principle | Implementation |
 |-----------|---------------|
 | Service Design | Microservices — loosely coupled, independently deployable |
