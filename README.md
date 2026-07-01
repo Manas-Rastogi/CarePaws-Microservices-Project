@@ -208,7 +208,7 @@ Each microservice runs in its own isolated container:
 - ✅ Consistent environments across dev, staging, and production
 - ✅ AWS-ready cloud deployment out of the box
 
----
+---------------------------------------------------
 
 ## 📦 Roadmap
 
