@@ -185,7 +185,7 @@ Notification Service triggers targeted alerts
 - [MongoDB](https://www.mongodb.com/try/download/community)
 
 ### Run Locally
-
+---------------------------------------------------
 ```bash
 # Clone the repository
 git clone https://github.com/your-username/your-repo-name.git
