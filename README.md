@@ -177,7 +177,7 @@ Notification Service triggers targeted alerts
 ---------------------------------------------------
 
 ## 🚀 Getting Started
-
+---------------------------------------------------
 ### Prerequisites
 
 - [Docker & Docker Compose](https://docs.docker.com/get-docker/)
