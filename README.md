@@ -244,6 +244,7 @@ Contributions are welcome and appreciated!
 
 ## 💡 Why This Project Matters
 ---------------------------------------------------
+---------------------------------------------------
 > *"The best use of technology is when it saves a life."*
 ---------------------------------------------------
 - 🐶🐱 Directly saves stray animal lives
