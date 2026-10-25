@@ -29,6 +29,7 @@ Every day, stray animals are injured on city roads. The current system fails the
 - ❌ No direct communication channel between citizens, NGOs, and municipal authorities
 - ❌ Manual phone calls and forwarding waste critical response time
 ---------------------------------------------------
+---------------------------------------------------
 > **The result?** Animals die waiting for help that never arrives in time.
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
