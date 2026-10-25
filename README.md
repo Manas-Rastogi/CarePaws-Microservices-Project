@@ -210,6 +210,7 @@ docker-compose up --build
 
 ## 🐳 Docker Setup
 ---------------------------------------------------
+---------------------------------------------------
 Each microservice runs in its own isolated container:
 
 - ✅ Independent scaling per service
