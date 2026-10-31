@@ -13,6 +13,7 @@
 
 🐾 Stray Animal Emergency Response Platform
 ---------------------------------------------------
+---------------------------------------------------
 ### *Bridging the gap between citizens, NGOs, and municipal authorities — because every second counts.*
 ---------------------------------------------------
 [Report Bug](https://github.com/your-username/your-repo/issues) · [Request Feature](https://github.com/your-username/your-repo/issues) · [⭐ Star this repo](#)
