@@ -81,7 +81,9 @@ graph LR
     RMQ -->|Consume| NS[Notification Service]
     NS -->|Alert| NGO
     NS -->|Alert| MUN
-```
+``
+
+---------------------------------------------------
 ---------------------------------------------------
 | Principle | Implementation |
 |-----------|---------------|
